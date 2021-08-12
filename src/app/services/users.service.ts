@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 
 import { RegisterForm } from '../interfaces/register-form.interface';
 import { LoginForm } from '../interfaces/login-form.interface';
+import { Users } from '../models/users.model';
 
 const baseUrl = environment.baseUrl;
 declare const gapi:any;
@@ -16,6 +17,7 @@ declare const gapi:any;
 })
 export class UsersService {
   public auth2:any;
+  public user:Users;
   constructor(
     private router:Router,
     private http: HttpClient,
@@ -24,14 +26,20 @@ export class UsersService {
     this.googleInit();
   }
 
+  get token():string {
+    return localStorage.getItem('token') || '';
+  }
+
+  get uid():string {
+    return this.user.uid || '';
+  }
+
   createUser(formData: RegisterForm) {
-    console.log('Creating User===>');
     return this.http.post(
       `${baseUrl}/users`,
       formData
     ).pipe(
       tap((resp:any) => {
-        console.log('Tap Resp===>', resp);
         if(resp.ok) {
           localStorage.setItem('token', resp.token);
         }
@@ -39,8 +47,20 @@ export class UsersService {
     );
   }
 
+  updateUser(data: {name:string, email:string, role:string}) {
+    data = {
+      ...data,
+      role: this.user.role
+    };
+    return this.http.put(`${baseUrl}/users/${this.uid}`, data, {
+        headers: {
+          'x-token': this.token
+        }
+      }
+    );
+  }
+
   login(formData: LoginForm) {
-    console.log('Login User===>');
     return this.http.post(
       `${baseUrl}/login`,
       formData
@@ -55,13 +75,11 @@ export class UsersService {
   }
 
   loginGoogle(token) {
-    console.log('Login User===>');
     return this.http.post(
       `${baseUrl}/login/google`,
       {token}
     ).pipe(
       tap((resp:any) => {
-        console.log('Tap Resp===>', resp);
         if(resp.ok) {
           localStorage.setItem('token', resp.token);
         }
@@ -84,21 +102,21 @@ export class UsersService {
   }
 
   validateToken():Observable<boolean> {
-    const token = localStorage.getItem('token') || '';
     return this.http.get(
       `${baseUrl}/login/renew`, {
         headers: {
-          'x-token': token
+          'x-token': this.token
         }
       }
     ).pipe(
-      tap((resp:any) => {
-        console.log('Tap Resp===>', resp);
+      map((resp:any) => {
         if(resp.ok) {
+          const { email, google, name, role, img = '', uid} = resp.user;
+          this.user = new Users(name, email, '', img, google, role, uid);
           localStorage.setItem('token', resp.token);
         }
+        return true;
       }),
-      map( resp => true),
       catchError(error => of(false))
     );
   }
