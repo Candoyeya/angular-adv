@@ -1,9 +1,11 @@
 import { Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from 'src/environments/environment';
+import { Router } from '@angular/router';
+
 import { tap, map, catchError } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
-import { Router } from '@angular/router';
+
+import { environment } from 'src/environments/environment';
 
 import { RegisterForm } from '../interfaces/register-form.interface';
 import { LoginForm } from '../interfaces/login-form.interface';
@@ -34,6 +36,14 @@ export class UsersService {
     return this.user.uid || '';
   }
 
+  get headers() {
+    return {
+      headers: {
+        'x-token': this.token
+      }
+    }
+  }
+
   createUser(formData: RegisterForm) {
     return this.http.post(
       `${baseUrl}/users`,
@@ -52,12 +62,11 @@ export class UsersService {
       ...data,
       role: this.user.role
     };
-    return this.http.put(`${baseUrl}/users/${this.uid}`, data, {
-        headers: {
-          'x-token': this.token
-        }
-      }
-    );
+    return this.http.put(`${baseUrl}/users/${this.uid}`, data, this.headers);
+  }
+
+  changeRole(user: Users) {
+    return this.http.put(`${baseUrl}/users/${user.uid}`, user, this.headers);
   }
 
   login(formData: LoginForm) {
@@ -129,5 +138,37 @@ export class UsersService {
       })
       console.log('User signed out.');
     });
+  }
+
+  loadUsers(from: number = 0) {
+    const url = `${baseUrl}/users?from=${from}`
+    return this.http.get(url,this.headers)
+      .pipe(
+        map( (resp:any) => {
+          if(resp.ok) {
+            const users = resp.users.map( user => new Users(
+              user.name, 
+              user.email,
+              '',
+              user.img,
+              user.google,
+              user.role,
+              user.uid
+            ));
+
+            return {
+              ...resp,
+              users
+            };
+          }
+          return resp;
+        })
+      );
+  }
+
+  deleteUser(uid:string) {
+    console.log('delete===>', uid);
+    const url = `${baseUrl}/users/${uid}`
+    return this.http.delete(url,this.headers);
   }
 }
