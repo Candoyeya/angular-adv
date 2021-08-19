@@ -65,7 +65,6 @@ export class UsersComponent implements OnInit, OnDestroy {
 
   onChangeSearch(value:string) {
     this.loading = true;
-    console.log('search===>', value);
     if(value.length) {
       this.searchingService.search('users', value)
       .subscribe((resp:any) => {
