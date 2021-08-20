@@ -95,4 +95,26 @@ export class SearchingService {
         })
       );
   }
+
+  searchAll( value: string) {
+    const url = `${baseUrl}/all/${value}`
+    return this.http.get<any[]>(url,this.headers)
+      .pipe(
+        map( (resp:any) => {
+          if(resp.ok) {
+            const users = this.transformUsers(resp.users);
+            const hospitals = this.transformHospitals(resp.hospitals);
+            const doctors = this.transformDoctors(resp.doctors);
+
+            return {
+              ...resp,
+              users,
+              hospitals,
+              doctors
+            };
+          }
+          return resp;
+        })
+      );
+  }
 }

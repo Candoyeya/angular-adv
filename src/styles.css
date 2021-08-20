@@ -22,8 +22,20 @@
   height: 200px;
 }
 
+.w75 {
+  width: 75px;
+}
+
+.h75 {
+  height: 75px;
+}
+
 .w100 {
   width: 100px;
+}
+
+.h100 {
+  height: 100px;
 }
 
 .w140 {

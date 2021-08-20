@@ -44,6 +44,10 @@ export class UsersService {
     }
   }
 
+  get role(): 'ADMIN_ROLE' | 'USER_ROLE' {
+    return this.user.role;
+  }
+
   createUser(formData: RegisterForm) {
     return this.http.post(
       `${baseUrl}/users`,
@@ -77,7 +81,7 @@ export class UsersService {
       tap((resp:any) => {
         console.log('Tap Resp===>', resp);
         if(resp.ok) {
-          localStorage.setItem('token', resp.token);
+          this.saveLocalStorage(resp.token, resp.menu);
         }
       })
     );
@@ -90,7 +94,7 @@ export class UsersService {
     ).pipe(
       tap((resp:any) => {
         if(resp.ok) {
-          localStorage.setItem('token', resp.token);
+          this.saveLocalStorage(resp.token, resp.menu);
         }
       })
     );
@@ -122,7 +126,7 @@ export class UsersService {
         if(resp.ok) {
           const { email, google, name, role, img = '', uid} = resp.user;
           this.user = new Users(name, email, '', img, google, role, uid);
-          localStorage.setItem('token', resp.token);
+          this.saveLocalStorage(resp.token, resp.menu);
         }
         return true;
       }),
@@ -132,6 +136,7 @@ export class UsersService {
 
   logout() {
     localStorage.removeItem('token');
+    localStorage.removeItem('menu');
     this.auth2.signOut().then(() => {
       this.ngZone.run(() => {
         this.router.navigateByUrl('/login');
@@ -170,5 +175,10 @@ export class UsersService {
     console.log('delete===>', uid);
     const url = `${baseUrl}/users/${uid}`
     return this.http.delete(url,this.headers);
+  }
+
+  saveLocalStorage(token:string, menu:any) {
+    localStorage.setItem('token', token);
+    localStorage.setItem('menu', JSON.stringify(menu));
   }
 }

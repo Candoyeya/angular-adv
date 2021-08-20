@@ -20,4 +20,11 @@ export class HeaderComponent {
   logout() {
     this.userService.logout();
   }
+
+  search(value: string) {
+    if(value.length === 0) {
+      return;
+    }
+    this.router.navigateByUrl(`/dashboard/search/${value}`);
+  }
 }

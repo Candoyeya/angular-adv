@@ -16,6 +16,8 @@ import { UsersComponent } from './maintenance/users/users.component';
 import { HospitalsComponent } from './maintenance/hospitals/hospitals.component';
 import { DoctorsComponent } from './maintenance/doctors/doctors.component';
 import { DoctorComponent } from './maintenance/doctors/doctor.component';
+import { SearchComponent } from './search/search.component';
+import { AdminGuard } from '../guards/admin.guard';
 
 
 const routes: Routes = [
@@ -30,9 +32,10 @@ const routes: Routes = [
       { path: 'grafica1', component: Grafica1Component, data: { titulo: 'Gráfica #1' }},
       { path: 'account-settings', component: AccountSettingsComponent, data: { titulo: 'Ajustes de cuenta' }},
       { path: 'profile', component: ProfileComponent, data: { titulo: 'Profile' }},
+      { path: 'search/:value', component: SearchComponent, data: { titulo: 'Search' }},
       
       // Maintenance
-      { path: 'users', component: UsersComponent, data: { titulo: 'User maintenance' }},
+      { path: 'users', canActivate: [AdminGuard], component: UsersComponent, data: { titulo: 'User maintenance' }},
       { path: 'hospitals', component: HospitalsComponent, data: { titulo: 'Hospital maintenance' }},
       { path: 'doctors', component: DoctorsComponent, data: { titulo: 'Doctor maintenance' }},
       { path: 'doctors/:id', component: DoctorComponent, data: { titulo: 'Doctor maintenance' }},
